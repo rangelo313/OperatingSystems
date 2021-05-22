@@ -2,6 +2,7 @@
 #include "oslabs.h"
 struct PCB handle_process_arrival_pp(struct PCB ready_queue[QUEUEMAX], int* queue_cnt, struct PCB current_process, struct PCB new_process, int timestamp)
 {
+	
 	//The method determines the process to execute nextand returns its PCB.
 		//if there is no currently-running process (ex: NULLPCB); then return the PCB of the newly arriving process indicating that it is the process to execute next 
 	if (current_process.process_id == 0 && current_process.arrival_timestamp == 0 && current_process.execution_endtime && current_process.execution_starttime ==0 && current_process.process_priority ==0 && current_process.remaining_bursttime == 0 && current_process.total_bursttime ==0)
@@ -14,25 +15,26 @@ struct PCB handle_process_arrival_pp(struct PCB ready_queue[QUEUEMAX], int* queu
 	else {
 		//compare the priority of the newly-arriving process with the currently-running process; 
 		//if the new process has equal or lower priority (smaller integers for the priority field in the PCB indicate higher priority)
-		if (new_process.process_priority >= current_process.process_priority)
+		if (new_process.process_priority >= current_process.process_priority) 
 		{
 			//add pcb to redy queue and return value is the pcb of the currently running process
 			new_process.execution_starttime = 0;
 			new_process.execution_endtime = 0;
 			new_process.remaining_bursttime = new_process.total_bursttime;
-			(*queue_cnt)++;
+		
 			ready_queue[(*queue_cnt)] = new_process;
-			
+			(*queue_cnt)++;
 			return current_process;
 			//ready_queue
 			//queue_cnt
 
 		}
-		else {
+		else { //if the new process has a higher priority
 			current_process.execution_endtime = 0;
 			current_process.remaining_bursttime = current_process.total_bursttime;
-			(*queue_cnt)++;
+			
 			ready_queue[(*queue_cnt)] = current_process;
+			(*queue_cnt)++;
 			new_process.execution_starttime = timestamp;
 			new_process.execution_endtime = timestamp + new_process.total_bursttime;
 			new_process.remaining_bursttime = new_process.total_bursttime;
