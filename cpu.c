@@ -14,7 +14,7 @@ struct PCB handle_process_arrival_pp(struct PCB ready_queue[QUEUEMAX], int* queu
 	else {
 		//compare the priority of the newly-arriving process with the currently-running process; 
 		//if the new process has equal or lower priority (smaller integers for the priority field in the PCB indicate higher priority)
-		if (new_process.process_priority <= current_process.process_priority)
+		if (new_process.process_priority >= current_process.process_priority)
 		{
 			//add pcb to redy queue and return value is the pcb of the currently running process
 			new_process.execution_starttime = 0;
