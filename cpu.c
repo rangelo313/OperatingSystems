@@ -22,7 +22,7 @@ struct PCB handle_process_arrival_pp(struct PCB ready_queue[QUEUEMAX], int* queu
 			new_process.execution_endtime = 0;
 			new_process.remaining_bursttime = new_process.total_bursttime;
 		
-			ready_queue[(*queue_cnt)] = new_process;
+			ready_queue[*queue_cnt] = new_process;
 			(*queue_cnt)++;
 			return current_process;
 			//ready_queue
@@ -33,11 +33,12 @@ struct PCB handle_process_arrival_pp(struct PCB ready_queue[QUEUEMAX], int* queu
 			current_process.execution_endtime = 0;
 			current_process.remaining_bursttime = current_process.total_bursttime;
 			
-			ready_queue[(*queue_cnt)] = current_process;
+			ready_queue[*queue_cnt] = current_process;
 			(*queue_cnt)++;
 			new_process.execution_starttime = timestamp;
 			new_process.execution_endtime = timestamp + new_process.total_bursttime;
-			new_process.remaining_bursttime = new_process.total_bursttime;
+			new_process.remaining_bursttime = new_process.total_bursttime;//going to be whatever is left over after you take away the time it has already been running. 
+			//calculate the time the current process has been running from the current timestamp and the execution start time
 			
 			return new_process;
 		}
