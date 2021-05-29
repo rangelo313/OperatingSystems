@@ -58,32 +58,53 @@ struct PCB handle_process_completion_pp(struct PCB ready_queue[QUEUEMAX], int* q
 	nullbyte.process_priority = 0;
 	nullbyte.remaining_bursttime = 0;
 	nullbyte.total_bursttime = 0;
-	if ((*queue_cnt) <= 0) //if empty  
+
+	struct PCB holder;
+	holder.process_id = 0;
+	holder.arrival_timestamp = 0;
+	holder.execution_endtime = 0;
+	holder.execution_starttime = 0;
+	holder.process_priority = 0;
+	holder.remaining_bursttime = 0;
+	holder.total_bursttime = 0;
+
+	if ((*queue_cnt) <= 0) //if ready queue is empty  
 	{
 		return nullbyte; //return NullPCB
 	}
 	else {
-		int count = 0;
-		count = ready_queue[0].process_priority;
-		for (int i = 1; i < (*queue_cnt); i++) {
-			if (ready_queue[i].process_priority <= count) {
+		int count = 0; //find the highest priority
+		int ctr = 0;
+		int COUNTER = 0;
+		count = ready_queue[0].process_priority; //set this equal to the first in the ready queue
+		for (int i = 1; i < (*queue_cnt); i++) { 
+			if (ready_queue[i].process_priority <= count) { //this will essentially find the PCB with the right PCB
 				count = ready_queue[i].process_priority;
+				ctr = COUNTER; //store the exact index where the pcb is in the readyqueue
 			} //if process_priority is higher save the one with the highest priority in count
+			COUNTER++;
 		}
+		//ctr now holds the readyqueue #
+		//Holder will hold the PCB we need to return later
+		holder.arrival_timestamp = ready_queue[ctr].arrival_timestamp;
+		holder.execution_endtime = ready_queue[ctr].execution_endtime;
+		holder.execution_starttime = ready_queue[ctr].execution_starttime;
+		holder.process_id = ready_queue[ctr].process_id;
+		holder.process_priority = ready_queue[ctr].process_priority;
+		holder.remaining_bursttime = ready_queue[ctr].remaining_bursttime;
+		holder.total_bursttime = ready_queue[ctr].total_bursttime;
 
 
-		for (int i = 0; i < (*queue_cnt); i++) {
-			if (ready_queue[i].process_priority == count)
-			{
-				ready_queue[i].execution_starttime = timestamp;
-				ready_queue[i].execution_endtime = timestamp + ready_queue[i].remaining_bursttime;
-				return ready_queue[i];
-			} //if process_priority is higher save the one with the highest priority in count
+		//now we need to remove the PCB from the readyqueue.... we know that CTR is the index where PCB is at; so we must remove this
+		for (int i = ctr - 1; i < queue_cnt - 1; i++)
+		{
+			ready_queue[i] = ready_queue[i + 1]; //this shifts everything down one
 		}
-
-		//count should store the highest priority number; now return the pcb with this priority number
-
-
+		//Set the execution start time as the current timestamp
+		holder.execution_starttime = timestamp;
+		holder.execution_endtime = timestamp + holder.remaining_bursttime;
+		return holder;
+		
 	}
 
 }
