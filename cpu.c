@@ -101,6 +101,7 @@ struct PCB handle_process_completion_pp(struct PCB ready_queue[QUEUEMAX], int* q
 			ready_queue[i] = ready_queue[i + 1]; //this shifts everything down one
 		}
 		//Set the execution start time as the current timestamp
+		(*queue_cnt)--; //decrease the queue size
 		holder.execution_starttime = timestamp;
 		holder.execution_endtime = timestamp + holder.remaining_bursttime;
 		return holder;
