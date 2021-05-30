@@ -32,10 +32,11 @@ struct PCB handle_process_arrival_pp(struct PCB ready_queue[QUEUEMAX], int* queu
 		else { //if the new process has a higher priority
 			current_process.execution_endtime = 0;
 			current_process.remaining_bursttime = timestamp - current_process.execution_starttime; //subtract the differenec between the timestamp and cp.st
-			int queuecount = (*queue_cnt);
-			ready_queue[queuecount] = current_process; //add to the ready queue
+	
+			ready_queue[*queue_cnt] = current_process; //add to the ready queue
 			(*queue_cnt)++;
 			new_process.execution_starttime = timestamp;
+			new_process.remaining_bursttime = new_process.total_bursttime;
 			new_process.execution_endtime = timestamp + new_process.total_bursttime;
 			return new_process; 
 		}
@@ -72,14 +73,15 @@ struct PCB handle_process_completion_pp(struct PCB ready_queue[QUEUEMAX], int* q
 	else {
 		int count = 0; //find the highest priority
 		int ctr = 0;
-		int COUNTER = 0;
+		int COUNTER = 1;
 		count = ready_queue[0].process_priority; //set this equal to the first in the ready queue
 		for (int i = 1; i < (*queue_cnt); i++) { 
-			if (ready_queue[i].process_priority <= count) { //this will essentially find the PCB with the right PCB
-				count = ready_queue[i].process_priority;
+			if (ready_queue[i].process_priority <= count) { //if element in ready queue has higher priority.
+				count = ready_queue[i].process_priority; //save the higher priority here
 				ctr = COUNTER; //store the exact index where the pcb is in the readyqueue
-			} //if process_priority is higher save the one with the highest priority in count
-			COUNTER++;
+			} 
+			//increment the counter
+			COUNTER++; 
 		}
 		//ctr now holds the readyqueue #
 		//Holder will hold the PCB we need to return later
@@ -91,7 +93,7 @@ struct PCB handle_process_completion_pp(struct PCB ready_queue[QUEUEMAX], int* q
 		holder.remaining_bursttime = ready_queue[ctr].remaining_bursttime;
 		holder.total_bursttime = ready_queue[ctr].total_bursttime;
 
-		int queuecount = (*queue_cnt)--;
+		int queuecount = (*queue_cnt)- 1;
 		//now we need to remove the PCB from the readyqueue.... we know that CTR is the index where PCB is at; so we must remove this
 		for (int i = ctr - 1; i < queuecount; i++)
 		{
@@ -102,7 +104,6 @@ struct PCB handle_process_completion_pp(struct PCB ready_queue[QUEUEMAX], int* q
 		holder.execution_starttime = timestamp;
 		holder.execution_endtime = timestamp + holder.remaining_bursttime;
 		return holder;
-		
 	}
 
 }
@@ -129,7 +130,7 @@ struct PCB handle_process_arrival_srtp(struct PCB ready_queue[QUEUEMAX], int* qu
 		else {
 			current_process.execution_starttime = 0;
 			current_process.execution_endtime = 0;
-			current_process.remaining_bursttime = time_stamp - current_process.execution_starttime;; //adjusting its remaining bursttime?
+			current_process.remaining_bursttime = time_stamp - current_process.execution_starttime;
 			ready_queue[(*queue_cnt)] = current_process;
 			(*queue_cnt)++;
 			new_process.execution_starttime = time_stamp;
@@ -169,11 +170,12 @@ struct PCB handle_process_completion_srtp(struct PCB ready_queue[QUEUEMAX], int*
 			}
 		}
 	}
-	for (int i = position - 1; i < (*queue_cnt) - 1; i++)
+	//remove this process from the ready queue and then return it.
+	for (int i = position; i < (*queue_cnt); i++)
 	{
 		ready_queue[i] = ready_queue[i + 1]; //copy next element value to current element.
 	}
-	(*queue_cnt)--; //decrease the size of the queue?
+	(*queue_cnt)--;
 	hold.execution_starttime = timestamp;
 	hold.execution_endtime = timestamp + hold.remaining_bursttime;
 	return hold; //removed from the ready_queue and returned the pcb that was removed.
