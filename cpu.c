@@ -31,15 +31,12 @@ struct PCB handle_process_arrival_pp(struct PCB ready_queue[QUEUEMAX], int* queu
 		}
 		else { //if the new process has a higher priority
 			current_process.execution_endtime = 0;
-			current_process.remaining_bursttime = current_process.total_bursttime;
+			current_process.remaining_bursttime = timestamp - current_process.execution_starttime; //subtract the differenec between the timestamp and cp.st
 			int queuecount = (*queue_cnt);
 			ready_queue[queuecount] = current_process; //add to the ready queue
 			(*queue_cnt)++;
 			new_process.execution_starttime = timestamp;
 			new_process.execution_endtime = timestamp + new_process.total_bursttime;
-			//new_process.remaining_bursttime = new_process.total_bursttime;//going to be whatever is left over after you take away the time it has already been running. 
-			//calculate the time the current process has been running from the current timestamp and the execution start time
-			new_process.remaining_bursttime = timestamp - new_process.execution_starttime;
 			return new_process; 
 		}
 	}
@@ -94,9 +91,9 @@ struct PCB handle_process_completion_pp(struct PCB ready_queue[QUEUEMAX], int* q
 		holder.remaining_bursttime = ready_queue[ctr].remaining_bursttime;
 		holder.total_bursttime = ready_queue[ctr].total_bursttime;
 
-
+		int queuecount = (*queue_cnt)--;
 		//now we need to remove the PCB from the readyqueue.... we know that CTR is the index where PCB is at; so we must remove this
-		for (int i = ctr - 1; i < queue_cnt - 1; i++)
+		for (int i = ctr - 1; i < queuecount; i++)
 		{
 			ready_queue[i] = ready_queue[i + 1]; //this shifts everything down one
 		}
@@ -120,19 +117,21 @@ struct PCB handle_process_arrival_srtp(struct PCB ready_queue[QUEUEMAX], int* qu
 	}
 	else {
 		// If the new process does not have a shorter burst time
-		if (current_process.remaining_bursttime > new_process.total_bursttime)
+		if (current_process.remaining_bursttime < new_process.total_bursttime)
 		{
 			new_process.execution_starttime = 0;
 			new_process.execution_endtime = 0;
 			new_process.remaining_bursttime = new_process.total_bursttime;
 			ready_queue[(*queue_cnt)] = new_process;
+			(*queue_cnt)++;
 			return current_process;//return value is the PCB of currently running process
 		}
 		else {
 			current_process.execution_starttime = 0;
 			current_process.execution_endtime = 0;
-			current_process.remaining_bursttime = current_process.total_bursttime; //adjusting its remaining bursttime?
+			current_process.remaining_bursttime = time_stamp - current_process.execution_starttime;; //adjusting its remaining bursttime?
 			ready_queue[(*queue_cnt)] = current_process;
+			(*queue_cnt)++;
 			new_process.execution_starttime = time_stamp;
 			new_process.execution_endtime = time_stamp + new_process.total_bursttime;
 			new_process.remaining_bursttime = new_process.total_bursttime;
