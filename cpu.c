@@ -31,7 +31,7 @@ struct PCB handle_process_arrival_pp(struct PCB ready_queue[QUEUEMAX], int* queu
 		}
 		else { //if the new process has a higher priority
 			current_process.execution_endtime = 0;
-			current_process.remaining_bursttime = timestamp - current_process.execution_starttime; //subtract the differenec between the timestamp and cp.st
+			current_process.remaining_bursttime = current_process.execution_endtime - timestamp; //subtract the differenec between the timestamp and cp.st
 	
 			ready_queue[*queue_cnt] = current_process; //add to the ready queue
 			(*queue_cnt)++;
@@ -95,7 +95,7 @@ struct PCB handle_process_completion_pp(struct PCB ready_queue[QUEUEMAX], int* q
 
 		int queuecount = (*queue_cnt)- 1;
 		//now we need to remove the PCB from the readyqueue.... we know that CTR is the index where PCB is at; so we must remove this
-		for (int i = ctr - 1; i < queuecount; i++)
+		for (int i = ctr; i < queuecount; i++)
 		{
 			ready_queue[i] = ready_queue[i + 1]; //this shifts everything down one
 		}
@@ -182,9 +182,76 @@ struct PCB handle_process_completion_srtp(struct PCB ready_queue[QUEUEMAX], int*
 }
 struct PCB handle_process_arrival_rr(struct PCB ready_queue[QUEUEMAX], int* queue_cnt, struct PCB current_process, struct PCB new_process, int timestamp, int time_quantum)
 {
+	struct PCB nullbyte; //ROUND ROBIN
+	struct PCB hold;
+	nullbyte.process_id = 0;
+	nullbyte.arrival_timestamp = 0;
+	nullbyte.execution_endtime = 0;
+	nullbyte.execution_starttime = 0;
+	nullbyte.process_priority = 0;
+	nullbyte.remaining_bursttime = 0;
+	nullbyte.total_bursttime = 0;
+	int lowest = 0;
+	int position = 0;
+	if ((*queue_cnt) <= 0)
+	{
+		new_process.execution_starttime = timestamp;
+		new_process.execution_endtime = timestamp + time_quantum + new_process.total_bursttime;
+		new_process.remaining_bursttime = new_process.total_bursttime;
+		return new_process;
+	}
+	else {
+		new_process.execution_endtime = 0;
+		new_process.execution_starttime = 0;
+		new_process.remaining_bursttime = new_process.total_bursttime;
+		ready_queue[*queue_cnt] = new_process;
+		(*queue_cnt)++;
+		return current_process;
+	}
 
 }
 struct PCB handle_process_completion_rr(struct PCB ready_queue[QUEUEMAX], int* queue_cnt, int timestamp, int time_quantum) {
+	struct PCB nullbyte; //ROUND ROBIN
+	struct PCB hold;
+	nullbyte.process_id = 0;
+	nullbyte.arrival_timestamp = 0;
+	nullbyte.execution_endtime = 0;
+	nullbyte.execution_starttime = 0;
+	nullbyte.process_priority = 0;
+	nullbyte.remaining_bursttime = 0;
+	nullbyte.total_bursttime = 0;
+	int lowest = 0;
+	int position = 0;
+	if ((*queue_cnt) <= 0)
+	{
+		return nullbyte;
+	}
+	else 
+	{
+		//find process in the queue with the earliest arrival time 
+		int i;
+		int counter = 1;
+		int early = ready_queue[0].arrival_timestamp;
+		for (i = 1; i < (*queue_cnt); i++)
+		{
+			if (ready_queue[i].arrival_timestamp <= early)
+			{
+				early = ready_queue[i].arrival_timestamp;
+				hold = ready_queue[i];
+				position = counter;
+			}
+			counter++;
+		}
+
+		for (int j = position; j < (*queue_cnt); j++)
+		{
+			ready_queue[j] = ready_queue[j + 1]; //this shifts everything down one
+		}
+		(*queue_cnt)--;
+		hold.execution_starttime = timestamp;
+		hold.execution_endtime = timestamp + time_quantum + hold.remaining_bursttime;
+		return hold;
+	}
 
 
 
